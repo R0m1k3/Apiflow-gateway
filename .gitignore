@@ -1,0 +1,5 @@
+.env
+# frps.toml contient le token secret — ne pas committer
+frps.toml
+caddy_data/
+caddy_config/

@@ -1,0 +1,10 @@
+# Copier en frps.toml et remplir le token
+# frps.toml est exclu du git (contient le token secret)
+
+bindAddr = "0.0.0.0"
+bindPort = 7000
+
+auth.method = "token"
+auth.token  = "CHANGE_ME_FRP_SECRET_TOKEN"
+
+log.level = "info"

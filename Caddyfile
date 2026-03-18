@@ -1,0 +1,20 @@
+# Caddy obtient automatiquement le certificat Let's Encrypt pour api.ffnancy.fr
+# Prérequis : DNS A record  api.ffnancy.fr → IP du serveur Hostinger
+
+api.ffnancy.fr {
+    # Proxifie vers le port exposé par frps (trafic tunnel depuis le magasin)
+    reverse_proxy frps:13000
+
+    # Headers de sécurité
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy no-referrer
+    }
+
+    # Logs
+    log {
+        output stdout
+        level INFO
+    }
+}

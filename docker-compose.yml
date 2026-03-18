@@ -1,0 +1,33 @@
+services:
+
+  # Reçoit le tunnel entrant du serveur magasin (frpc → frps)
+  # Expose le port 7000 sur internet pour que le magasin puisse s'y connecter
+  frps:
+    image: snowdreamtech/frps:latest
+    container_name: ff_frps
+    volumes:
+      - ./frps.toml:/etc/frp/frps.toml:ro
+    ports:
+      - "7000:7000"   # connexions frpc entrant depuis le magasin
+    restart: unless-stopped
+
+  # Reverse proxy HTTPS avec SSL automatique (Let's Encrypt)
+  # Proxifie api.ffnancy.fr → tunnel frp → API du magasin
+  caddy:
+    image: caddy:2-alpine
+    container_name: ff_caddy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frps
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
