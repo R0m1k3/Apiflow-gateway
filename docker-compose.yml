@@ -1,22 +1,16 @@
 services:
 
-  # Reçoit le tunnel entrant du serveur magasin (frpc → frps)
-  # Expose le port 7000 sur internet pour que le magasin puisse s'y connecter
   frps:
     image: snowdreamtech/frps:latest
     container_name: ff_frps
     volumes:
       - ./frps.toml:/etc/frp/frps.toml:ro
     ports:
-      - "7000:7000"   # connexions frpc entrant depuis le magasin
+      - "7000:7000"
     networks:
-      - default
-      - nginx_network
+      - nginx_default
     restart: unless-stopped
 
-  # Sync PG Debian → PG Hostinger
-  # Source : frps:15432 (tunnel frp vers postgres Debian)
-  # Destination : postgres_db (container existant dans nginx_network)
   sync:
     build: ./sync
     container_name: ff_sync_hostinger
@@ -32,15 +26,13 @@ services:
       DST_USER: post
       DST_PASS: post25
     ports:
-      - "3002:3002"    # dashboard sync accessible localement
+      - "3002:3002"
     networks:
-      - default        # pour atteindre frps:15432
-      - nginx_network  # pour atteindre postgres_db
+      - nginx_default
     depends_on:
       - frps
     restart: unless-stopped
 
 networks:
-  nginx_network:
+  nginx_default:
     external: true
-    name: nginx_default
