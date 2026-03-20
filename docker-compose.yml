@@ -14,6 +14,32 @@ services:
       - nginx_network
     restart: unless-stopped
 
+  # Sync PG Debian → PG Hostinger
+  # Source : frps:15432 (tunnel frp vers postgres Debian)
+  # Destination : postgres_db (container existant dans nginx_network)
+  sync:
+    build: ./sync
+    container_name: ff_sync_hostinger
+    environment:
+      SRC_HOST: frps
+      SRC_PORT: 15432
+      SRC_DB:   ${SRC_DB}
+      SRC_USER: ${SRC_USER}
+      SRC_PASS: ${SRC_PASS}
+      DST_HOST: postgres_db
+      DST_PORT: 5432
+      DST_DB:   post
+      DST_USER: post
+      DST_PASS: post25
+    ports:
+      - "3002:3002"    # dashboard sync accessible localement
+    networks:
+      - default        # pour atteindre frps:15432
+      - nginx_network  # pour atteindre postgres_db
+    depends_on:
+      - frps
+    restart: unless-stopped
+
 networks:
   nginx_network:
     external: true

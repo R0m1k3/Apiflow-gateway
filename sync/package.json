@@ -1,0 +1,13 @@
+{
+  "name": "ff-sync-hostinger",
+  "version": "1.0.0",
+  "description": "Sync nightly PG Debian → PG Hostinger",
+  "main": "index.js",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.1.0",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.3"
+  }
+}
