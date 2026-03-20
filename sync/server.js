@@ -64,7 +64,7 @@ app.get('/api/logs', (req, res) => {
 app.get('/api/next', (req, res) => {
   const now  = new Date();
   const next = new Date(now);
-  next.setHours(3, 30, 0, 0);
+  next.setHours(5, 30, 0, 0);
   if (next <= now) next.setDate(next.getDate() + 1);
   res.json({ next: next.toISOString() });
 });

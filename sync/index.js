@@ -77,8 +77,8 @@ if (forceMode) {
     });
 } else {
   startDashboard();
-  console.log('Service sync Hostinger démarré — cron: 30 3 * * * (3h30 chaque nuit)');
-  cron.schedule('30 3 * * *', () => {
+  console.log('Service sync Hostinger démarré — cron: 30 5 * * * (5h30 chaque nuit)');
+  cron.schedule('30 5 * * *', () => {
     syncAll(false).catch(err => console.error('Erreur cron sync:', err.message));
   });
 }
