@@ -25,6 +25,8 @@ const TABLES = [
   { name: 'mvtreg',              pk: [] },
   // Ranking
   { name: 'ranking',             pk: ['gencod', 'site'] },
+  // CA journalier + trafic
+  { name: 'statopca',            pk: ['site', 'datmvt'] },
   // Commandes
   { name: 'cdefou_reception',    pk: ['no_id'] },
   { name: 'cdefou_vivant',       pk: ['cdefou_ligne_com_no_id', 'artfou1_no_id'] },
