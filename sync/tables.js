@@ -27,6 +27,10 @@ const TABLES = [
   { name: 'ranking',             pk: ['gencod', 'site'] },
   // CA journalier + trafic
   { name: 'statopca',            pk: ['site', 'datmvt'] },
+  // Gamme conseillée par site
+  { name: 'stat_dispoperm',            pk: ['codesite', 'code_art'] },
+  // Journal de commande conseillé
+  { name: 'phenix_quantite_conseille', pk: ['ident'] },
   // Commandes
   { name: 'cdefou_reception',    pk: ['no_id'] },
   { name: 'cdefou_vivant',       pk: ['cdefou_ligne_com_no_id', 'artfou1_no_id'] },
