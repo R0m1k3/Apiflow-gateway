@@ -310,3 +310,80 @@ CREATE TABLE IF NOT EXISTS cdefou_receplig (
 );
 CREATE INDEX IF NOT EXISTS idx_receplig_artfou1 ON cdefou_receplig (artfou1_no_id);
 CREATE INDEX IF NOT EXISTS idx_receplig_date    ON cdefou_receplig (suividatecreation);
+
+-- ============================================================
+-- Publicités (FBENTPUB + ECOULEMENT + ECOULEMENT_DETAIL SQL Server)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS pub_entetes (
+  ent_npub   TEXT PRIMARY KEY,
+  ent_datdeb TIMESTAMP,
+  ent_datfin TIMESTAMP,
+  ent_titre  TEXT
+);
+
+CREATE TABLE IF NOT EXISTS pub_ecoulement (
+  site                 TEXT NOT NULL,
+  tcr_code             TEXT NOT NULL,
+  tcr_libelle          TEXT,
+  tcr_nature           SMALLINT,
+  tcr_type             SMALLINT,
+  tcrd_datedeb         TIMESTAMP,
+  tcrd_datefin         TIMESTAMP,
+  datecalcul           TIMESTAMP,
+  stock_datedebut      NUMERIC(14,3),
+  ca_total_periode_pub NUMERIC(14,4),
+  ca_pub_periode_pub   NUMERIC(14,4),
+  pourc_capub_catotal  NUMERIC(8,4),
+  qte_vendue_pub       NUMERIC(14,3),
+  client_total_periode NUMERIC(14,3),
+  client_pub_periode   NUMERIC(14,3),
+  stock_datefin        NUMERIC(14,3),
+  ca_pub_30_jours      NUMERIC(14,4),
+  stock_30_jours       NUMERIC(14,3),
+  ca_pub_60_jours      NUMERIC(14,4),
+  stock_60_jours       NUMERIC(14,3),
+  ca_pub_90_jours      NUMERIC(14,4),
+  stock_90_jours       NUMERIC(14,3),
+  ca_pub_180_jours     NUMERIC(14,4),
+  stock_180_jours      NUMERIC(14,3),
+  ca_depuis_finpub     NUMERIC(14,4),
+  taux_sortie          NUMERIC(8,4),
+  marge                NUMERIC(14,4),
+  taux_marge           NUMERIC(8,4),
+  PRIMARY KEY (site, tcr_code)
+);
+CREATE INDEX IF NOT EXISTS idx_pub_ecoulement_tcr_code    ON pub_ecoulement (tcr_code);
+CREATE INDEX IF NOT EXISTS idx_pub_ecoulement_tcrd_datedeb ON pub_ecoulement (tcrd_datedeb);
+
+CREATE TABLE IF NOT EXISTS pub_ecoulement_detail (
+  site                 TEXT NOT NULL,
+  tcr_code             TEXT NOT NULL,
+  artnoid              BIGINT NOT NULL,
+  tcr_libelle          TEXT,
+  tcrd_datedeb         TIMESTAMP,
+  tcrd_datefin         TIMESTAMP,
+  datecalcul           TIMESTAMP,
+  ca_pub_periode_pub   NUMERIC(14,4),
+  qte_vendue_pub       NUMERIC(14,3),
+  stock_datedebut      NUMERIC(14,3),
+  stock_datefin        NUMERIC(14,3),
+  ca_pub_30_jours      NUMERIC(14,4),
+  ca_pub_60_jours      NUMERIC(14,4),
+  ca_pub_90_jours      NUMERIC(14,4),
+  ca_pub_180_jours     NUMERIC(14,4),
+  ca_depuis_finpub     NUMERIC(14,4),
+  taux_sortie          NUMERIC(8,4),
+  marge                NUMERIC(14,4),
+  taux_marge           NUMERIC(8,4),
+  codein               TEXT,
+  libelle              TEXT,
+  prmp                 NUMERIC(12,4),
+  pa                   NUMERIC(12,4),
+  pv                   NUMERIC(12,4),
+  prixpub              TEXT,
+  PRIMARY KEY (site, tcr_code, artnoid)
+);
+CREATE INDEX IF NOT EXISTS idx_pub_detail_tcr_code ON pub_ecoulement_detail (tcr_code);
+CREATE INDEX IF NOT EXISTS idx_pub_detail_artnoid   ON pub_ecoulement_detail (artnoid);
+CREATE INDEX IF NOT EXISTS idx_pub_detail_codein    ON pub_ecoulement_detail (codein);

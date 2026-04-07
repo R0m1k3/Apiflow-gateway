@@ -35,6 +35,10 @@ const TABLES = [
   { name: 'cdefou_reception',    pk: ['no_id'] },
   { name: 'cdefou_vivant',       pk: ['cdefou_ligne_com_no_id', 'artfou1_no_id'] },
   { name: 'cdefou_receplig',     pk: ['no_id'] },
+  // Publicités
+  { name: 'pub_entetes',              pk: ['ent_npub'] },
+  { name: 'pub_ecoulement',           pk: ['site', 'tcr_code'] },
+  { name: 'pub_ecoulement_detail',    pk: ['site', 'tcr_code', 'artnoid'] },
 ];
 
 module.exports = { TABLES };
