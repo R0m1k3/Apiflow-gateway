@@ -1,10 +1,29 @@
-# Copier en frps.toml et remplir le token
-# frps.toml est exclu du git (contient le token secret)
+# Serveur frp (Hostinger) — version frp 0.71.0 (image snowdreamtech/frps:0.71.0-alpine).
+# Copier en frps.toml et remplacer le token. frps.toml est exclu du git (contient le secret).
+#
+# Token : long et aléatoire, identique dans frpc.toml côté Debian. Générer avec :
+#     openssl rand -hex 32
 
 bindAddr = "0.0.0.0"
 bindPort = 7000
 
 auth.method = "token"
-auth.token  = "CHANGE_ME_FRP_SECRET_TOKEN"
+auth.token  = "CHANGE_ME_openssl_rand_hex_32"
+# Le token authentifie aussi les heartbeats et chaque nouvelle connexion de travail
+# (doit être identique côté frpc : auth.additionalScopes = ["HeartBeats", "NewWorkConns"])
+auth.additionalScopes = ["HeartBeats", "NewWorkConns"]
+
+# Refuse les connexions frpc non chiffrées (frpc a transport.tls.enable = true par défaut)
+transport.tls.force = true
+
+# Seuls ports distants autorisés : API Debian (13000) et PostgreSQL Debian (15432).
+# Toute autre demande de proxy du frpc est refusée.
+allowPorts = [
+  { single = 13000 },
+  { single = 15432 },
+]
+
+# Limite le nombre de proxys par client
+maxPortsPerClient = 2
 
 log.level = "info"

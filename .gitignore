@@ -1,5 +1,7 @@
+# Secrets — ne jamais committer
 .env
-# frps.toml contient le token secret — ne pas committer
 frps.toml
+
+node_modules/
 caddy_data/
 caddy_config/

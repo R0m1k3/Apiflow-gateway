@@ -1,13 +1,23 @@
 {
   "name": "ff-sync-hostinger",
-  "version": "1.0.0",
-  "description": "Sync nightly PG Debian → PG Hostinger",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Miroir PG Debian → PG Hostinger (schéma automatique, copie transactionnelle/incrémentale)",
   "main": "index.js",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "sync": "node index.js --once",
+    "sync:force": "node index.js --force",
+    "test": "node --test test/*.test.js"
+  },
   "dependencies": {
     "express": "^5.1.0",
-    "node-cron": "^3.0.3",
-    "pg": "^8.13.3"
+    "node-cron": "^4.6.0",
+    "pg": "^8.16.0"
   }
 }

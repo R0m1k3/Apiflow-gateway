@@ -1,36 +1,71 @@
+# Gateway Hostinger : frps (tunnel depuis le serveur Debian du magasin) + miroir PostgreSQL.
+# Tous les services sont sur le réseau externe nginx_default (Nginx Proxy Manager, postgres_db…).
+# Aucun secret dans ce fichier : tout vient de .env (voir .env.example) et frps.toml (voir frps.toml.example).
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
 
   frps:
-    image: snowdreamtech/frps:latest
+    # Version épinglée : frpc côté Debian doit utiliser la même (snowdreamtech/frpc:0.71.0-alpine)
+    image: snowdreamtech/frps:0.71.0-alpine
     container_name: ff_frps
     volumes:
       - ./frps.toml:/etc/frp/frps.toml:ro
     ports:
+      # Seul port publié : connexion du frpc Debian. Les ports distants 13000 (API) et
+      # 15432 (PostgreSQL) ne sont joignables que depuis le réseau nginx_default.
       - "7000:7000"
+    environment:
+      TZ: Europe/Paris
     networks:
       - nginx_default
+    logging: *logging
     restart: unless-stopped
 
   sync:
     build: ./sync
+    image: ff_sync_hostinger:local
     container_name: ff_sync_hostinger
     environment:
-      SRC_HOST: frps
-      SRC_PORT: 15432
-      SRC_DB:   ${SRC_DB}
-      SRC_USER: ${SRC_USER}
-      SRC_PASS: ${SRC_PASS}
-      DST_HOST: postgres_db
-      DST_PORT: 5432
-      DST_DB:   post
-      DST_USER: post
-      DST_PASS: post25
-    ports:
-      - "3002:3002"
+      TZ: Europe/Paris
+      # Source : PostgreSQL Debian via le tunnel frps
+      SRC_HOST: ${SRC_HOST:-frps}
+      SRC_PORT: ${SRC_PORT:-15432}
+      SRC_DB:   ${SRC_DB:?SRC_DB manquant dans .env}
+      SRC_USER: ${SRC_USER:?SRC_USER manquant dans .env}
+      SRC_PASS: ${SRC_PASS:?SRC_PASS manquant dans .env}
+      # Destination : PostgreSQL Hostinger
+      DST_HOST: ${DST_HOST:-postgres_db}
+      DST_PORT: ${DST_PORT:-5432}
+      DST_DB:   ${DST_DB:?DST_DB manquant dans .env}
+      DST_USER: ${DST_USER:?DST_USER manquant dans .env}
+      DST_PASS: ${DST_PASS:?DST_PASS manquant dans .env}
+      # Planification et comportement
+      SYNC_CRON: ${SYNC_CRON:-30 7 * * *}
+      SYNC_TZ: ${SYNC_TZ:-Europe/Paris}
+      EXCLUDE_TABLES: ${EXCLUDE_TABLES:-}
+      WINDOW_TABLES: ${WINDOW_TABLES:-}
+      WINDOW_RECENT_DAYS: ${WINDOW_RECENT_DAYS:-10}
+      DEBIAN_WAIT_POLL_MIN: ${DEBIAN_WAIT_POLL_MIN:-2}
+      DEBIAN_WAIT_MAX_MIN: ${DEBIAN_WAIT_MAX_MIN:-180}
+      # Dashboard (sans ces deux variables : dashboard désactivé, 503)
+      DASHBOARD_USER: ${DASHBOARD_USER:-}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD:-}
+      # Alerte (Slack / Discord / Mattermost…) — optionnel
+      ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}
+    # Pas de "ports:" : Nginx Proxy Manager joint ff_sync_hostinger:3002 via nginx_default
+    expose:
+      - "3002"
     networks:
       - nginx_default
     depends_on:
       - frps
+    logging: *logging
     restart: unless-stopped
 
 networks:
