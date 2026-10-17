@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sync Hostinger</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+header{background:#1e293b;padding:1rem 2rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;border-bottom:1px solid #334155}
+header h1{font-size:1.2rem;font-weight:700;color:#f8fafc}
+.subtitle{font-size:.75rem;color:#64748b}
+.badge{font-size:.75rem;padding:.25rem .6rem;border-radius:9999px;font-weight:600}
+.badge.idle{background:#1e3a5f;color:#93c5fd}
+.badge.running{background:#713f12;color:#fde68a;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+main{padding:1.5rem 2rem;max-width:1300px;margin:0 auto}
+.actions{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem}
+button{padding:.55rem 1.3rem;border:none;border-radius:.5rem;cursor:pointer;font-weight:600;font-size:.85rem;transition:.15s}
+button:disabled{opacity:.4;cursor:not-allowed}
+#btnSync{background:#2563eb;color:#fff}
+#btnSync:hover:not(:disabled){background:#1d4ed8}
+#btnForce{background:#7c2d12;color:#fed7aa}
+#btnForce:hover:not(:disabled){background:#9a3412}
+#btnRefresh,#btnCopyLogs{background:#334155;color:#cbd5e1}
+#btnRefresh:hover,#btnCopyLogs:hover{background:#475569}
+#btnCopyLogs{font-size:.75rem;padding:.35rem .8rem}
+#nextSync{font-size:.8rem;color:#64748b;margin-left:auto}
+#msg{font-size:.82rem;padding:.35rem .75rem;border-radius:.4rem}
+#msg.ok{background:#14532d;color:#86efac}
+#msg.err{background:#450a0a;color:#fca5a5}
+.hidden{display:none !important}
+.box{background:#1e293b;border:1px solid #334155;border-radius:.75rem;padding:1rem 1.25rem;margin-bottom:1.5rem}
+.progress-header{display:flex;justify-content:space-between;margin-bottom:.6rem;font-size:.85rem}
+.progress-bar-bg{background:#0f172a;border-radius:9999px;height:12px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#059669,#2563eb);border-radius:9999px;transition:width .5s ease;width:0}
+.progress-detail{margin-top:.5rem;font-size:.78rem;color:#64748b}
+#runInfo{font-size:.85rem}
+.card{background:#1e293b;border:1px solid #334155;border-radius:.75rem;overflow:hidden;margin-bottom:1.5rem}
+.card-header{padding:.65rem 1rem;background:#0f172a;border-bottom:1px solid #334155;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#94a3b8;display:flex;justify-content:space-between;align-items:center}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{padding:.5rem .8rem;text-align:left;color:#64748b;font-weight:500;border-bottom:1px solid #334155;white-space:nowrap}
+td{padding:.5rem .8rem;border-bottom:1px solid #263449;vertical-align:top}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.detail{color:#94a3b8;max-width:520px;word-break:break-word}
+.st-ok{color:#4ade80}.st-error{color:#f87171}.st-running{color:#fde68a}
+.strat{font-size:.72rem;padding:.1rem .45rem;border-radius:.3rem;background:#334155;color:#cbd5e1}
+.strat.window{background:#1e3a5f;color:#93c5fd}
+.log-box{height:340px;overflow-y:auto;font-family:monospace;font-size:.76rem;padding:.75rem 1rem;background:#0a0f1e;color:#a5f3fc;line-height:1.7}
+.log-line{white-space:pre-wrap;word-break:break-all}
+.log-line.error{color:#f87171}
+.log-line.warn{color:#fbbf24}
+.ts{color:#475569;margin-right:.5rem}
+#lastRefresh{font-size:.75rem;color:#475569;margin-left:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Sync Hostinger</h1>
+  <span class="subtitle">PG Debian (frps:15432) → PG Hostinger (miroir automatique du schéma)</span>
+  <span id="statusBadge" class="badge idle">Inactif</span>
+  <span id="lastRefresh"></span>
+</header>
+<main>
+  <div class="actions">
+    <button id="btnSync" type="button">Lancer la sync</button>
+    <button id="btnForce" type="button" title="Ignore le garde-fou volume et recharge entièrement les tables de mouvements">Forcer (rechargement complet)</button>
+    <button id="btnRefresh" type="button">Rafraîchir</button>
+    <span id="msg" class="hidden"></span>
+    <span id="nextSync"></span>
+  </div>
+
+  <div id="progressBox" class="box hidden">
+    <div class="progress-header">
+      <span id="progressLabel">Synchronisation en cours…</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar"></div></div>
+    <div class="progress-detail" id="progressDetail"></div>
+  </div>
+
+  <div class="box"><div id="runInfo">Chargement…</div></div>
+
+  <div class="card">
+    <div class="card-header"><span>Statut des tables</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Table</th><th>Stratégie</th><th>Dernière sync</th><th>Lignes</th><th>Durée</th><th>Statut</th><th>Détail / erreur</th></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span>Logs</span><button id="btnCopyLogs" type="button">Copier les logs</button></div>
+    <div class="log-box" id="logBox">Chargement…</div>
+  </div>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>
